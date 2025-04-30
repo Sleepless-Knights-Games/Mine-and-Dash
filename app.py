@@ -1,6 +1,5 @@
 import streamlit as st
 from game_logic import Game
-from PIL import Image
 
 st.set_page_config(page_title="Mine and Dash", layout="wide")
 st.title("Mine and Dash")
@@ -9,32 +8,31 @@ if "game" not in st.session_state:
     st.session_state.game = Game(num_players=2)
 
 game = st.session_state.game
-
-# Show current hand
 st.subheader(f"Round {game.round} - Turn {game.turn}")
+
 player_hand = game.get_current_hand()
-
 cols = st.columns(len(player_hand))
-selected_card = None
+selected_card_id = None
+
 for i, card in enumerate(player_hand):
-    if cols[i].button(f"Play: {card}", key=f"play_{i}_{card}_{game.turn}"):
-        selected_card = card
+    label = f"{card['name']}"
+    if cols[i].button(label, key=f"card_{card['id']}"):
+        selected_card_id = card["id"]
 
-if selected_card:
-    game.play_card(selected_card)
+if selected_card_id:
+    game.play_card(selected_card_id)
 
-# Show cave-in deck state
 st.markdown("### Cave-In Deck")
 st.write(f"Cave-in streak: {game.cave_in_streak}")
-st.write(f"Cave-in cards shown: {game.cave_in_cards_revealed}")
+st.write(f"Cards revealed: {game.cave_in_cards_revealed}")
 
 if game.round_over:
-    st.success("Round over due to cave-in!")
-    if st.button("Start Next Round"):
+    st.success("Round ended due to cave-in!")
+    if st.button("Start next round"):
         game.next_round()
 
 if game.is_game_over():
     st.success("Game Over!")
-    scores = game.get_final_scores()
-    st.write("Final Scores:", scores)
-    st.button("Restart Game", on_click=lambda: st.session_state.pop("game"))
+    st.write("Final Scores:", game.get_final_scores())
+    if st.button("Restart Game"):
+        del st.session_state["game"]
