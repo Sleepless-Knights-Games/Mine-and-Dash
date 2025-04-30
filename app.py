@@ -17,7 +17,7 @@ player_hand = game.get_current_hand()
 cols = st.columns(len(player_hand))
 selected_card = None
 for i, card in enumerate(player_hand):
-    if cols[i].button(f"Play: {card}"):
+    if cols[i].button(f"Play: {card}", key=f"play_{i}_{card}_{game.turn}"):
         selected_card = card
 
 if selected_card:
