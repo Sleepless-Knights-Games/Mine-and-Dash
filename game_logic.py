@@ -44,7 +44,7 @@ class Game:
         player_index = (self.turn - 1) % self.num_players
         hand = self.hands[player_index]
 
-        # Find and remove played card
+        # Remove played card from hand
         card = next((c for c in hand if c["id"] == card_id), None)
         if card:
             hand[:] = [c for c in hand if c["id"] != card_id]
@@ -55,6 +55,7 @@ class Game:
         # Draw from cave-in deck
         if self.cave_in_deck:
             drawn = self.cave_in_deck.pop(0)
+
             if drawn == "Cave-In":
                 self.cave_in_streak += 1
                 self.cave_in_cards_revealed.append("Cave-In")
@@ -62,12 +63,12 @@ class Game:
                 self.cave_in_streak = 0
                 self.cave_in_cards_revealed.append("Safe")
 
-                # Reshuffle revealed cave-ins back into the cave-in deck
-                cave_ins_to_shuffle = [card for card in self.cave_in_cards_revealed if card == "Cave-In"]
+                # Discard Safe and reshuffle Cave-Ins
+                cave_ins_to_shuffle = [c for c in self.cave_in_cards_revealed if c == "Cave-In"]
                 self.cave_in_deck += cave_ins_to_shuffle
                 random.shuffle(self.cave_in_deck)
 
-                # Clear revealed card history
+                # Clear revealed list after reshuffle
                 self.cave_in_cards_revealed = []
 
             if self.cave_in_streak >= 3:
@@ -88,5 +89,5 @@ class Game:
         return self.round > 3
 
     def get_final_scores(self):
-        # Placeholder scoring
+        # Placeholder scoring logic
         return {f"Player {i+1}": random.randint(10, 30) for i in range(self.num_players)}
