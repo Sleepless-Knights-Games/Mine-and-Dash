@@ -43,7 +43,7 @@ class Game:
         player_index = (self.turn - 2) % self.num_players
         hand = self.hands[player_index]
         card = next(c for c in hand if c["id"] == card_id)
-        hand.remove(card)
+        hand[:] = [c for c in hand if c["id"] != card_id]
         if card["name"] != "Escape":
             hand.append(self.deck.pop() if self.deck else self.make_card("Empty"))
 
