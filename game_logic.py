@@ -10,7 +10,6 @@ class Game:
         self.cave_in_deck = []
         self.hands = [[] for _ in range(num_players)]
         self.escape_cards = [self.make_card("Escape") for _ in range(num_players)]
-        self.discard_pile = []
         self.cave_in_streak = 0
         self.cave_in_cards_revealed = []
         self.round_over = False
@@ -38,15 +37,48 @@ class Game:
         self.cave_in_streak = 0
         self.cave_in_cards_revealed = []
 
-    def play_card(self, card_id):
-        self.turn += 1
-        player_index = (self.turn - 2) % self.num_players
-        hand = self.hands[player_index]
-        card = next(c for c in hand if c["id"] == card_id)
-        hand[:] = [c for c in hand if c["id"] != card_id]
-        if card["name"] != "Escape":
-            hand.append(self.deck.pop() if self.deck else self.make_card("Empty"))
+    def draw_card(self):
+        return self.deck.pop() if self.deck else self.make_card("Empty")
 
-        drawn = self.cave_in_deck.pop(0)
-        if drawn == "Cave-In":
-            self.cave
+    def play_card(self, card_id):
+        player_index = (self.turn - 1) % self.num_players
+        hand = self.hands[player_index]
+
+        # Find the card and remove it safely
+        card = next((c for c in hand if c["id"] == card_id), None)
+        if card:
+            hand[:] = [c for c in hand if c["id"] != card_id]
+
+            if card["name"] != "Escape":
+                hand.append(self.draw_card())
+
+        # Cave-in check
+        if self.cave_in_deck:
+            drawn = self.cave_in_deck.pop(0)
+            if drawn == "Cave-In":
+                self.cave_in_streak += 1
+                self.cave_in_cards_revealed.append("Cave-In")
+            else:
+                self.cave_in_streak = 0
+                self.cave_in_cards_revealed.append("Safe")
+
+            if self.cave_in_streak >= 3:
+                self.round_over = True
+
+        self.turn += 1
+
+    def get_current_hand(self):
+        player_index = (self.turn - 1) % self.num_players
+        return self.hands[player_index]
+
+    def next_round(self):
+        if self.round < 3:
+            self.round += 1
+            self.init_game()
+
+    def is_game_over(self):
+        return self.round > 3
+
+    def get_final_scores(self):
+        # Placeholder for actual scoring logic
+        return {f"Player {i+1}": random.randint(10, 30) for i in range(self.num_players)}
